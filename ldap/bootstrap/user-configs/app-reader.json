@@ -1,0 +1,10 @@
+{
+  "id": "app-reader",
+  "email": "app-reader@example.test",
+  "displayName": "Application Reader",
+  "password": "reader-local-password",
+  "gravatar": false,
+  "groups": [
+    "lldap_strict_readonly"
+  ]
+}

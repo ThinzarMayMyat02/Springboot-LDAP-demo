@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${title})}"></head>
+<body>
+<header th:replace="~{layout :: header}"></header>
+<main class="container narrow">
+    <a class="back" th:href="@{${base}}" th:text="|← ${title}|">Back</a>
+    <h1 th:text="|Delete ${#strings.toLowerCase(label)}?|">Delete record?</h1>
+    <section class="panel">
+        <p>Delete <strong th:text="${users ? row.username() : row.name()}">this record</strong>?</p>
+        <p class="muted" th:if="${users}">This removes the LDAP account and prevents future sign-ins. Existing sessions last until sign-out or expiry.</p>
+        <form class="actions form-actions" th:action="@{${base + '/' + row.id() + '/delete'}}" method="post">
+            <button class="danger" type="submit">Delete</button>
+            <a class="button secondary" th:href="@{${base + '/' + row.id()}}">Cancel</a>
+        </form>
+    </section>
+</main>
+</body>
+</html>

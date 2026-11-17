@@ -1,0 +1,10 @@
+{
+  "id": "demo-user",
+  "email": "demo-user@example.test",
+  "displayName": "Demo User",
+  "password": "user-local-password",
+  "gravatar": false,
+  "groups": [
+    "ROLE_USER"
+  ]
+}

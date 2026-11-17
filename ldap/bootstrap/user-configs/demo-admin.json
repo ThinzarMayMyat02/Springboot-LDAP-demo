@@ -1,0 +1,10 @@
+{
+  "id": "demo-admin",
+  "email": "demo-admin@example.test",
+  "displayName": "Demo Admin",
+  "password": "admin-local-password",
+  "gravatar": false,
+  "groups": [
+    "ROLE_ADMIN"
+  ]
+}

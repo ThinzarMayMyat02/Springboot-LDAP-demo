@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${title})}"></head>
+<body>
+<header th:replace="~{layout :: header}"></header>
+<main class="container">
+    <div class="page-heading">
+        <h1 th:text="${title}">Records</h1>
+        <a class="button primary" th:href="@{${base + '/new'}}"
+           th:text="${users ? 'Add user' : 'Add product'}">Add record</a>
+    </div>
+    <p class="alert" role="status" th:if="${message}" th:text="${message}"></p>
+    <div class="panel empty" th:if="${rows.isEmpty()}">
+        <h2 th:text="${users ? 'No user accounts yet' : 'No products yet'}">No records yet</h2>
+        <p class="muted" th:text="${users ? 'Create an LDAP account to give someone access to Products.' : 'Add a product to start your catalog.'}"></p>
+    </div>
+    <div class="panel table-wrap" th:unless="${rows.isEmpty()}" tabindex="0" role="region" th:aria-label="${title}">
+        <table>
+            <thead><tr>
+                <th scope="col" th:text="${users ? 'Username' : 'Name'}">Name</th>
+                <th scope="col" th:text="${users ? 'Display name' : 'Price'}">Price</th>
+                <th scope="col" th:if="${users}">Email</th>
+                <th scope="col">Actions</th>
+            </tr></thead>
+            <tbody><tr th:each="row : ${rows}">
+                <th scope="row"><a th:href="@{${base + '/' + row.id()}}"
+                    th:text="${users ? row.username() : row.name()}">Record</a></th>
+                <td th:text="${users ? row.displayName() : row.price()}"></td>
+                <td th:if="${users}" th:text="${row.email()}"></td>
+                <td><div class="actions">
+                    <a th:href="@{${base + '/' + row.id() + '/edit'}}"
+                       th:aria-label="|Edit ${users ? row.username() : row.name()}|">Edit</a>
+                    <a class="text-danger" th:href="@{${base + '/' + row.id() + '/delete'}}"
+                       th:aria-label="|Delete ${users ? row.username() : row.name()}|">Delete</a>
+                </div></td>
+            </tr></tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${title})}"></head>
+<body>
+<header th:replace="~{layout :: header}"></header>
+<main class="container narrow">
+    <a class="back" th:href="@{${base}}" th:text="|← ${title}|">Back</a>
+    <h1 th:text="|${editing ? 'Edit' : 'Add'} ${#strings.toLowerCase(label)}|">Edit record</h1>
+    <form class="panel fields" th:action="@{${action}}" th:object="${form}" method="post">
+        <p class="alert error" role="alert" th:if="${#fields.hasGlobalErrors()}" th:errors="*{global}"></p>
+        <th:block th:if="${users}">
+            <th:block th:unless="${editing}">
+                <label for="username">LDAP username</label>
+                <input th:field="*{username}" maxlength="128" required th:errorclass="invalid" aria-describedby="username-error">
+                <p id="username-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="field-error"></p>
+                <label for="password">Initial password</label>
+                <input id="password" name="password" type="password" autocomplete="new-password"
+                       minlength="12" maxlength="128" required aria-describedby="password-error">
+                <p id="password-error" th:if="${#fields.hasErrors('password')}" class="field-error"
+                   th:text="${#fields.errors('password')[0]}"></p>
+                <p class="muted">New accounts get the USER role and can sign in to Products.</p>
+            </th:block>
+            <div th:if="${editing}" class="identity">
+                <strong>LDAP username</strong>
+                <span th:text="${row.username()}"></span>
+            </div>
+            <label for="displayName">Display name</label>
+            <input th:field="*{displayName}" maxlength="120" required th:errorclass="invalid" aria-describedby="display-name-error">
+            <p id="display-name-error" th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}" class="field-error"></p>
+            <label for="email">Contact email</label>
+            <input type="email" th:field="*{email}" maxlength="254" required th:errorclass="invalid" aria-describedby="email-error">
+            <p id="email-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error"></p>
+        </th:block>
+        <th:block th:unless="${users}">
+            <label for="name">Product name</label>
+            <input th:field="*{name}" maxlength="120" required th:errorclass="invalid" aria-describedby="name-error">
+            <p id="name-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="field-error"></p>
+            <label for="price">Price</label>
+            <input type="number" min="0" step="0.01" th:field="*{price}" required th:errorclass="invalid" aria-describedby="price-error">
+            <p id="price-error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="field-error"></p>
+        </th:block>
+        <div class="actions form-actions">
+            <button class="primary" type="submit">Save</button>
+            <a class="button secondary" th:href="@{${base}}">Cancel</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>
