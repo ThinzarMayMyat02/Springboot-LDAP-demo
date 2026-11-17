@@ -34,9 +34,10 @@ Open [the login page](http://127.0.0.1:8080/login).
 1. Sign in as `demo-user`. Add a product, open its details, edit it, and use
    the delete confirmation. Visiting `/admin/users` directly returns 403.
 2. Sign out and sign in as `demo-admin`. Open **Users**, choose **Add user**,
-   and enter a new username, display name, email, and password. The app creates
-   the directory account and puts it in `ROLE_USER`. Sign out and use the new
-   credentials to sign in. Admins can edit account names and email addresses
+   and enter a new username, display name, email, password, and role. Choose
+   `ROLE_USER` for Products or `ROLE_ADMIN` for Products and Users. The app
+   creates the directory account with the selected role. Sign out and use the new
+   credentials to sign in. Admins can edit account names, email addresses, and roles
    or delete accounts from the Users module.
 3. Run `./mvnw test` for the application tests.
 
@@ -47,8 +48,10 @@ the submitted password. Directory groups are named `ROLE_USER` and
 `ROLE_ADMIN` and grant those Spring Security authorities directly. The app
 uses the read-only `app-reader` account for authentication lookups. The Users
 module uses LLDAP's management API for account records and LDAP to set the
-initial password. It manages regular accounts and excludes directory service
-accounts and administrators. Browser sessions and CSRF protection cover
+initial password. It manages application users and admins and excludes directory service
+accounts. The role selector defaults to `ROLE_USER` for new accounts. Saving
+a role replaces the other application role. Existing sessions keep their
+permissions until the next sign-in. Browser sessions and CSRF protection cover
 login, logout, and CRUD form submissions.
 
 For an existing volume, run `docker compose up -d` followed by

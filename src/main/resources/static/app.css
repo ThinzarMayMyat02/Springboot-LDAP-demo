@@ -46,8 +46,8 @@ tbody tr:last-child > * { border-bottom: 0; }
 .fields { display: grid; gap: .5rem; }
 .fields label { font-weight: 600; }
 .fields label:not(:first-child) { margin-top: .55rem; }
-input { width: 100%; padding: .65rem .75rem; border: 1px solid #aebbcf; border-radius: .5rem; font: inherit; color: inherit; }
-input.invalid { border-color: #ad263d; }
+input, select { width: 100%; padding: .65rem .75rem; border: 1px solid #aebbcf; border-radius: .5rem; font: inherit; color: inherit; }
+input.invalid, select.invalid { border-color: #ad263d; }
 .field-error { font-size: .875rem; }
 .form-actions { margin-top: 1.25rem; }
 .back { display: inline-block; margin-bottom: 1rem; }

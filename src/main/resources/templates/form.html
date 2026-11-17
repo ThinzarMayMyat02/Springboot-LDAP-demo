@@ -18,7 +18,7 @@
                        minlength="12" maxlength="128" required aria-describedby="password-error">
                 <p id="password-error" th:if="${#fields.hasErrors('password')}" class="field-error"
                    th:text="${#fields.errors('password')[0]}"></p>
-                <p class="muted">New accounts get the USER role and can sign in to Products.</p>
+
             </th:block>
             <div th:if="${editing}" class="identity">
                 <strong>LDAP username</strong>
@@ -30,6 +30,13 @@
             <label for="email">Contact email</label>
             <input type="email" th:field="*{email}" maxlength="254" required th:errorclass="invalid" aria-describedby="email-error">
             <p id="email-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error"></p>
+            <label for="role">Role</label>
+            <select th:field="*{role}" required th:errorclass="invalid" aria-describedby="role-help role-error">
+                <option th:each="role : ${roles}" th:value="${role}" th:text="${role}"></option>
+            </select>
+            <p id="role-help" class="muted">ROLE_USER can manage Products. ROLE_ADMIN can manage Products and Users.
+                Role changes apply at the next sign-in.</p>
+            <p id="role-error" th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="field-error"></p>
         </th:block>
         <th:block th:unless="${users}">
             <label for="name">Product name</label>

@@ -10,6 +10,7 @@
         <dl>
             <th:block th:if="${users}">
                 <dt>LDAP username</dt><dd th:text="${row.username()}"></dd>
+                <dt>Role</dt><dd th:text="${row.role()}"></dd>
                 <dt>Contact email</dt><dd th:text="${row.email()}"></dd>
             </th:block>
             <th:block th:unless="${users}">

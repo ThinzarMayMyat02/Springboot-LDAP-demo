@@ -76,7 +76,7 @@ class UserProfileRepository {
 
         List<UserProfileView> list() {
             var result = execute("""
-                    { users(filters: {memberOf: "ROLE_USER"}) {
+                    { users(filters: {any: [{memberOf: "ROLE_USER"}, {memberOf: "ROLE_ADMIN"}]}) {
                         id displayName email groups { displayName }
                     } }
                     """, Map.of());
@@ -84,20 +84,16 @@ class UserProfileRepository {
                     .filter(user -> StreamSupport.stream(user.path("groups").spliterator(), false)
                             .noneMatch(group -> {
                                 String name = group.path("displayName").asText();
-                                return name.equalsIgnoreCase("ROLE_ADMIN") || name.startsWith("lldap_");
+                                return name.startsWith("lldap_");
                             }))
                     .map(user -> new UserProfileView(user.path("id").asText(),
-                            user.path("displayName").asText(), user.path("email").asText()))
+                            user.path("displayName").asText(), user.path("email").asText(), roleOf(user)))
                     .toList();
         }
 
         void create(UserProfileCreateForm form) {
             String id = form.username();
-            var groups = execute("{ groups { id displayName } }", Map.of()).path("groups");
-            int role = StreamSupport.stream(groups.spliterator(), false)
-                    .filter(group -> group.path("displayName").asText().equalsIgnoreCase("ROLE_USER"))
-                    .mapToInt(group -> group.path("id").asInt()).findFirst()
-                    .orElseThrow(() -> new ProfileUsernameException("The ROLE_USER directory group is missing."));
+            int role = roleGroup(form.role());
             execute("mutation ($user: CreateUserInput!) { createUser(user: $user) { id } }",
                     Map.of("user", Map.of("id", id, "displayName", form.displayName(), "email", form.email())));
             try {
@@ -115,8 +111,46 @@ class UserProfileRepository {
         }
 
         void update(String id, UserProfileForm form) {
+            var previous = list().stream().filter(user -> user.username().equals(id)).findFirst()
+                    .orElseThrow(() -> new ProfileUsernameException("The directory account no longer exists."));
+            int selectedGroup = roleGroup(form.role());
+            int otherGroup = roleGroup(form.role() == UserRole.ROLE_USER ? UserRole.ROLE_ADMIN : UserRole.ROLE_USER);
             execute("mutation ($user: UpdateUserInput!) { updateUser(user: $user) { ok } }",
                     Map.of("user", Map.of("id", id, "displayName", form.displayName(), "email", form.email())));
+            setMembership("addUserToGroup", id, selectedGroup);
+            try {
+                setMembership("removeUserFromGroup", id, otherGroup);
+            } catch (ProfileUsernameException exception) {
+                if (previous.role() != form.role()) {
+                    try {
+                        setMembership("addUserToGroup", id, otherGroup);
+                        setMembership("removeUserFromGroup", id, selectedGroup);
+                    } catch (ProfileUsernameException rollbackFailure) {
+                        throw new ProfileUsernameException("Role update failed. Reload this account and verify its directory memberships.");
+                    }
+                }
+                throw new ProfileUsernameException("Profile details were saved, but the role update failed. Reload and retry.");
+            }
+        }
+
+        private UserRole roleOf(JsonNode user) {
+            boolean admin = StreamSupport.stream(user.path("groups").spliterator(), false)
+                    .anyMatch(group -> group.path("displayName").asText().equalsIgnoreCase("ROLE_ADMIN"));
+            return admin ? UserRole.ROLE_ADMIN : UserRole.ROLE_USER;
+        }
+
+        private int roleGroup(UserRole role) {
+            var groups = execute("{ groups { id displayName } }", Map.of()).path("groups");
+            return StreamSupport.stream(groups.spliterator(), false)
+                    .filter(group -> group.path("displayName").asText().equalsIgnoreCase(role.name()))
+                    .mapToInt(group -> group.path("id").asInt()).findFirst()
+                    .orElseThrow(() -> new ProfileUsernameException("The " + role.name() + " directory group is missing."));
+        }
+
+        private void setMembership(String operation, String id, int group) {
+            execute("mutation ($id: String!, $role: Int!) { " + operation
+                            + "(userId: $id, groupId: $role) { ok } }",
+                    Map.of("id", id, "role", group));
         }
 
         void delete(String id) {

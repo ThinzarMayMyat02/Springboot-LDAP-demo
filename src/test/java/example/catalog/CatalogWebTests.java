@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import example.catalog.user.UserProfileService;
 import example.catalog.user.UserProfileView;
+import example.catalog.user.UserRole;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -67,7 +68,7 @@ class CatalogWebTests {
 
     @Test
     void adminCanSubmitDirectoryAccountForms() throws Exception {
-        var account = new UserProfileView("new-user", "New User", "new@example.test");
+        var account = new UserProfileView("new-user", "New User", "new@example.test", UserRole.ROLE_ADMIN);
         when(users.list()).thenReturn(List.of(account));
         when(users.get("new-user")).thenReturn(account);
         var admin = user("demo-admin").roles("ADMIN");
@@ -79,18 +80,27 @@ class CatalogWebTests {
                 .andExpect(model().attributeHasFieldErrors("form", "password"));
         mvc.perform(post("/admin/users").with(admin).with(csrf())
                         .param("username", "new-user").param("displayName", "New User")
-                        .param("email", "new@example.test").param("password", "local-test-password"))
+                        .param("email", "new@example.test").param("password", "local-test-password").param("role", "ROLE_ADMIN"))
                 .andExpect(redirectedUrl("/admin/users"));
         verify(users).create(new example.catalog.user.UserProfileCreateForm(
-                "new-user", "New User", "new@example.test", "local-test-password"));
+                "new-user", "New User", "new@example.test", "local-test-password", UserRole.ROLE_ADMIN));
         mvc.perform(get("/admin/users").with(admin))
                 .andExpect(content().string(containsString("new-user")));
-        mvc.perform(get("/admin/users/new-user/edit").with(admin)).andExpect(status().isOk());
+        mvc.perform(get("/admin/users/new-user/edit").with(admin))
+                .andExpect(content().string(containsString("value=\"ROLE_ADMIN\" selected=\"selected\"")));
+        mvc.perform(post("/admin/users").with(admin).with(csrf())
+                        .param("username", "new-user").param("displayName", "New User")
+                        .param("email", "new@example.test").param("password", "local-test-password")
+                        .param("role", "SUPERUSER"))
+                .andExpect(model().attributeHasFieldErrors("form", "role"));
+        mvc.perform(post("/admin/users/new-user").with(admin).with(csrf())
+                        .param("displayName", "New User").param("email", "new@example.test"))
+                .andExpect(model().attributeHasFieldErrors("form", "role"));
         mvc.perform(post("/admin/users/new-user").with(admin).with(csrf())
                         .param("username", "other").param("displayName", "Updated Name")
-                        .param("email", "new@example.test"))
+                        .param("email", "new@example.test").param("role", "ROLE_USER"))
                 .andExpect(redirectedUrl("/admin/users"));
-        verify(users).update("new-user", new example.catalog.user.UserProfileForm("Updated Name", "new@example.test"));
+        verify(users).update("new-user", new example.catalog.user.UserProfileForm("Updated Name", "new@example.test", UserRole.ROLE_USER));
         mvc.perform(get("/admin/users/new-user/delete").with(admin)).andExpect(status().isOk());
         mvc.perform(post("/admin/users/new-user/delete").with(admin).with(csrf()))
                 .andExpect(redirectedUrl("/admin/users"));

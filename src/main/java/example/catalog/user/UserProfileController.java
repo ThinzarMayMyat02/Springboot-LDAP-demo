@@ -23,6 +23,7 @@ class UserProfileController {
         model.addAttribute("title", "Users");
         model.addAttribute("label", "User account");
         model.addAttribute("users", true);
+        model.addAttribute("roles", UserRole.values());
     }
 
     @GetMapping
@@ -39,7 +40,7 @@ class UserProfileController {
 
     @GetMapping("/new")
     String newForm(Model model) {
-        model.addAttribute("form", new UserProfileCreateForm(null, null, null, null));
+        model.addAttribute("form", new UserProfileCreateForm(null, null, null, null, UserRole.ROLE_USER));
         return formPage(model, null);
     }
 
@@ -61,7 +62,7 @@ class UserProfileController {
     @GetMapping("/{id}/edit")
     String editForm(@PathVariable String id, Model model) {
         var row = service.get(id);
-        model.addAttribute("form", new UserProfileForm(row.displayName(), row.email()));
+        model.addAttribute("form", new UserProfileForm(row.displayName(), row.email(), row.role()));
         return formPage(model, id);
     }
 

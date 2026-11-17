@@ -20,6 +20,7 @@
                 <th scope="col" th:text="${users ? 'Username' : 'Name'}">Name</th>
                 <th scope="col" th:text="${users ? 'Display name' : 'Price'}">Price</th>
                 <th scope="col" th:if="${users}">Email</th>
+                <th scope="col" th:if="${users}">Role</th>
                 <th scope="col">Actions</th>
             </tr></thead>
             <tbody><tr th:each="row : ${rows}">
@@ -27,6 +28,7 @@
                     th:text="${users ? row.username() : row.name()}">Record</a></th>
                 <td th:text="${users ? row.displayName() : row.price()}"></td>
                 <td th:if="${users}" th:text="${row.email()}"></td>
+                <td th:if="${users}" th:text="${row.role()}"></td>
                 <td><div class="actions">
                     <a th:href="@{${base + '/' + row.id() + '/edit'}}"
                        th:aria-label="|Edit ${users ? row.username() : row.name()}|">Edit</a>
